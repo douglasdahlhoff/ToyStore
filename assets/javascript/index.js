@@ -6,23 +6,31 @@ const renderBadge = () => {
 }
 
 const listenToAdd = (buttons) => {
-buttons.forEach((button) => {
-button.addEventListener('click', (event) => {
-const { id, name, price } = event.currentTarget.dataset
-if (cartLS.exists(id)) {
-cartLS.quantity(id, 1)
-} else {
-cartLS.add({ id, name, price })
-}
-dataLayer.push({
-event: 'add_to_cart',
-product_id: id,
-product_name: name,
-product_price: Number(price)
-})
-})
-})
-}  
+  buttons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const { id, name, price } = event.currentTarget.dataset;
+      const parsedPrice = Number(price); // Ensure price is a number
+
+      try {
+        if (cartLS.exists(id)) {
+          cartLS.quantity(id, 1); // Increment quantity if item exists
+        } else {
+          cartLS.add({ id, name, price: parsedPrice }); // Add new item with parsed price
+        }
+
+        dataLayer.push({
+          event: 'add_to_cart',
+          product_id: id,
+          product_name: name,
+          product_price: parsedPrice
+        });
+      } catch (error) {
+        console.error("Error adding item to cart or pushing to dataLayer:", error);
+      }
+    });
+  });
+};
+
 const cartItemsListeners = () => {
   const addToCartButtons = document.querySelectorAll('.cart .add-to-cart')
   listenToAdd(addToCartButtons)
